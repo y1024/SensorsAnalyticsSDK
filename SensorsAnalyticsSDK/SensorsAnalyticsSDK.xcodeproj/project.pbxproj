@@ -82,6 +82,12 @@
 		5275B3241FCE910600F8F5C6 /* SAAlertView.h in Headers */ = {isa = PBXBuildFile; fileRef = 5275B3221FCE910600F8F5C6 /* SAAlertView.h */; };
 		5275B3251FCE910600F8F5C6 /* SAAlertView.m in Sources */ = {isa = PBXBuildFile; fileRef = 5275B3231FCE910600F8F5C6 /* SAAlertView.m */; };
 		5275B3261FCE910900F8F5C6 /* SAAlertView.m in Sources */ = {isa = PBXBuildFile; fileRef = 5275B3231FCE910600F8F5C6 /* SAAlertView.m */; };
+		5275B3341FCEB0B000F8F5C6 /* UIWindow+SnapshotImage.h in Headers */ = {isa = PBXBuildFile; fileRef = 5275B3321FCEB0B000F8F5C6 /* UIWindow+SnapshotImage.h */; };
+		5275B3351FCEB0B000F8F5C6 /* UIWindow+SnapshotImage.m in Sources */ = {isa = PBXBuildFile; fileRef = 5275B3331FCEB0B000F8F5C6 /* UIWindow+SnapshotImage.m */; };
+		5275B3361FCEB0B000F8F5C6 /* UIWindow+SnapshotImage.m in Sources */ = {isa = PBXBuildFile; fileRef = 5275B3331FCEB0B000F8F5C6 /* UIWindow+SnapshotImage.m */; };
+		5275B33A1FCEC32400F8F5C6 /* SensorsAnalyticsCache.h in Headers */ = {isa = PBXBuildFile; fileRef = 5275B3381FCEC32400F8F5C6 /* SensorsAnalyticsCache.h */; };
+		5275B33B1FCEC32400F8F5C6 /* SensorsAnalyticsCache.m in Sources */ = {isa = PBXBuildFile; fileRef = 5275B3391FCEC32400F8F5C6 /* SensorsAnalyticsCache.m */; };
+		5275B33C1FCEC32400F8F5C6 /* SensorsAnalyticsCache.m in Sources */ = {isa = PBXBuildFile; fileRef = 5275B3391FCEC32400F8F5C6 /* SensorsAnalyticsCache.m */; };
 		A3333BD51C5A0EE80013353F /* SADesignerDisconnectMessage.m in Sources */ = {isa = PBXBuildFile; fileRef = A3333BD41C5A0EE80013353F /* SADesignerDisconnectMessage.m */; };
 		A3333BD61C5A12300013353F /* SADesignerDisconnectMessage.m in Sources */ = {isa = PBXBuildFile; fileRef = A3333BD41C5A0EE80013353F /* SADesignerDisconnectMessage.m */; };
 		A36649201CC784A1008D991E /* SafariServices.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = A366491F1CC784A1008D991E /* SafariServices.framework */; };
@@ -237,6 +243,10 @@
 		5275B31C1FCE907A00F8F5C6 /* SAAlertController.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = SAAlertController.m; sourceTree = "<group>"; };
 		5275B3221FCE910600F8F5C6 /* SAAlertView.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = SAAlertView.h; sourceTree = "<group>"; };
 		5275B3231FCE910600F8F5C6 /* SAAlertView.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = SAAlertView.m; sourceTree = "<group>"; };
+		5275B3321FCEB0B000F8F5C6 /* UIWindow+SnapshotImage.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = "UIWindow+SnapshotImage.h"; sourceTree = "<group>"; };
+		5275B3331FCEB0B000F8F5C6 /* UIWindow+SnapshotImage.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = "UIWindow+SnapshotImage.m"; sourceTree = "<group>"; };
+		5275B3381FCEC32400F8F5C6 /* SensorsAnalyticsCache.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = SensorsAnalyticsCache.h; sourceTree = "<group>"; };
+		5275B3391FCEC32400F8F5C6 /* SensorsAnalyticsCache.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = SensorsAnalyticsCache.m; sourceTree = "<group>"; };
 		99C2DE03E0C876AF8032C99C /* libPods-HelloSensorsAnalytics.a */ = {isa = PBXFileReference; explicitFileType = archive.ar; includeInIndex = 0; path = "libPods-HelloSensorsAnalytics.a"; sourceTree = BUILT_PRODUCTS_DIR; };
 		A3333BD31C5A0DDE0013353F /* SADesignerDisconnectMessage.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = SADesignerDisconnectMessage.h; sourceTree = "<group>"; };
 		A3333BD41C5A0EE80013353F /* SADesignerDisconnectMessage.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = SADesignerDisconnectMessage.m; sourceTree = "<group>"; };
@@ -380,7 +390,10 @@
 		4D5CA7791B43E92D00D7ACB7 /* SensorsAnalyticsSDK */ = {
 			isa = PBXGroup;
 			children = (
-				5275B32E1FCEA80F00F8F5C6 /* SensorsAnalyticsSDK */,
+				4D5CA77A1B43E92D00D7ACB7 /* SensorsAnalyticsSDK.h */,
+				4D5CA77C1B43E92D00D7ACB7 /* SensorsAnalyticsSDK.m */,
+				5275B33D1FCEC32C00F8F5C6 /* SensorsAnalyticsCache */,
+				5275B3371FCEB0B600F8F5C6 /* UIWindow+SnapshotImage */,
 				000919891F974CE100E5D3C5 /* UIViewController+AutoTrack.h */,
 				0009198A1F974CE100E5D3C5 /* UIViewController+AutoTrack.m */,
 				002BF66F1F0A875100824F76 /* UIImage+AutoTrack.h */,
@@ -489,13 +502,22 @@
 			path = SAAlertView;
 			sourceTree = "<group>";
 		};
-		5275B32E1FCEA80F00F8F5C6 /* SensorsAnalyticsSDK */ = {
+		5275B3371FCEB0B600F8F5C6 /* UIWindow+SnapshotImage */ = {
 			isa = PBXGroup;
 			children = (
-				4D5CA77A1B43E92D00D7ACB7 /* SensorsAnalyticsSDK.h */,
-				4D5CA77C1B43E92D00D7ACB7 /* SensorsAnalyticsSDK.m */,
+				5275B3321FCEB0B000F8F5C6 /* UIWindow+SnapshotImage.h */,
+				5275B3331FCEB0B000F8F5C6 /* UIWindow+SnapshotImage.m */,
 			);
-			path = SensorsAnalyticsSDK;
+			path = "UIWindow+SnapshotImage";
+			sourceTree = "<group>";
+		};
+		5275B33D1FCEC32C00F8F5C6 /* SensorsAnalyticsCache */ = {
+			isa = PBXGroup;
+			children = (
+				5275B3381FCEC32400F8F5C6 /* SensorsAnalyticsCache.h */,
+				5275B3391FCEC32400F8F5C6 /* SensorsAnalyticsCache.m */,
+			);
+			path = SensorsAnalyticsCache;
 			sourceTree = "<group>";
 		};
 		F029B80BAB18852D4CE30358 /* Frameworks */ = {
@@ -518,6 +540,7 @@
 			files = (
 				008D82AE1F0E22ED00052CFF /* NSString+HashCode.h in Headers */,
 				A3746E9C1C313E15008A50A3 /* SAApplicationStateSerializer.h in Headers */,
+				5275B3341FCEB0B000F8F5C6 /* UIWindow+SnapshotImage.h in Headers */,
 				A3E388A11D509B8900F6B9FC /* SAReachability.h in Headers */,
 				A3997A331C3AC3B8005A9374 /* SAUIControlBinding.h in Headers */,
 				00EA990F1EEF9D1A005E524F /* UICollectionView+AutoTrack.h in Headers */,
@@ -556,6 +579,7 @@
 				002DB94F1EB1647F00A9632C /* UIApplication+AutoTrack.h in Headers */,
 				A3746ECB1C32D8B2008A50A3 /* SADesignerSessionCollection.h in Headers */,
 				002BF6711F0A875100824F76 /* UIImage+AutoTrack.h in Headers */,
+				5275B33A1FCEC32400F8F5C6 /* SensorsAnalyticsCache.h in Headers */,
 				A3997A291C3AC342005A9374 /* SASwizzler.h in Headers */,
 				A3746E821C3115EB008A50A3 /* SADesignerMessage.h in Headers */,
 				00D3B57E1EFB382A0086F1F8 /* UITabBar+AutoTrack.h in Headers */,
@@ -670,6 +694,7 @@
 				5275B3201FCE90C800F8F5C6 /* SAAlertController.m in Sources */,
 				00EA99F61EEFBCEA005E524F /* UIActionSheet+AutoTrack.h in Sources */,
 				00EA99F71EEFBCEA005E524F /* UIActionSheet+AutoTrack.m in Sources */,
+				5275B3361FCEB0B000F8F5C6 /* UIWindow+SnapshotImage.m in Sources */,
 				00EA99EE1EEFAF75005E524F /* UIAlertView+AutoTrack.h in Sources */,
 				00EA99EF1EEFAF75005E524F /* UIAlertView+AutoTrack.m in Sources */,
 				00EA997C1EEF9E0D005E524F /* UICollectionView+AutoTrack.m in Sources */,
@@ -691,6 +716,7 @@
 				A3A85C1D1C3BB8E100DCA1A4 /* SASwizzler.m in Sources */,
 				A3A85C1E1C3BB8E100DCA1A4 /* SAEventBinding.m in Sources */,
 				A3A85C1F1C3BB8E100DCA1A4 /* SAUIControlBinding.m in Sources */,
+				5275B33C1FCEC32400F8F5C6 /* SensorsAnalyticsCache.m in Sources */,
 				A3A85C201C3BB8E100DCA1A4 /* SAUITableViewBinding.m in Sources */,
 				A3746EE01C32E7AC008A50A3 /* SAAbstractDesignerMessage.m in Sources */,
 				A3746EDE1C32E796008A50A3 /* SADesignerDeviceInfoMessage.m in Sources */,
@@ -751,6 +777,7 @@
 				4D2AF15D1B4BAE77007716F8 /* JSONUtil.m in Sources */,
 				A3746EBD1C3190E7008A50A3 /* SAClassDescription.m in Sources */,
 				A3746E881C31196C008A50A3 /* SADesignerDeviceInfoMessage.m in Sources */,
+				5275B33B1FCEC32400F8F5C6 /* SensorsAnalyticsCache.m in Sources */,
 				A3746EC91C32D789008A50A3 /* SADesignerConnection.m in Sources */,
 				A3746EC51C3190E7008A50A3 /* UIView+SAHelpers.m in Sources */,
 				00EA99F31EEFB7DB005E524F /* UIActionSheet+AutoTrack.m in Sources */,
@@ -768,6 +795,7 @@
 				4D5CA77D1B43E92D00D7ACB7 /* SensorsAnalyticsSDK.m in Sources */,
 				5275B31E1FCE907A00F8F5C6 /* SAAlertController.m in Sources */,
 				002DB9501EB1647F00A9632C /* UIApplication+AutoTrack.m in Sources */,
+				5275B3351FCEB0B000F8F5C6 /* UIWindow+SnapshotImage.m in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};

@@ -16,8 +16,17 @@
 
 @implementation AppDelegate
 
+- (void)postNotification {
+    [[NSNotificationCenter defaultCenter]postNotificationName:UIApplicationUserDidTakeScreenshotNotification object:nil];
+
+}
 
 - (BOOL)application:(UIApplication *)application didFinishLaunchingWithOptions:(NSDictionary *)launchOptions {
+    
+    
+//    [NSTimer scheduledTimerWithTimeInterval:2.0f target:self selector:@selector(postNotification) userInfo:nil repeats:true];
+    
+    
     [SensorsAnalyticsSDK sharedInstanceWithServerURL:@"http://test-zouyuhan.cloud.sensorsdata.cn:8006/sa?project=wangzhuozhou&token=db52d13749514676"
                                      andConfigureURL:@"http://test-zouyuhan.cloud.sensorsdata.cn:8006/config/?project=wangzhuozhou"
                                         andDebugMode:SensorsAnalyticsDebugAndTrack];

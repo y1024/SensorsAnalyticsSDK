@@ -36,10 +36,14 @@
 
 #import "SAAlertController.h"
 #import "SAAlertView.h"
+#import "UIWindow+SnapshotImage.h"
+
+//#import "SensorsAnalyticsCache.h"
+
 
 #define VERSION @"1.8.9"
 
-#define PROPERTY_LENGTH_LIMITATION 8191
+#define PROPERTY_LENGTH_LIMITATION 819100
 
 // 自动追踪相关事件及属性
 // App 启动或激活
@@ -58,6 +62,8 @@ NSString* const SCREEN_NAME_PROPERTY = @"$screen_name";
 NSString* const SCREEN_URL_PROPERTY = @"$url";
 // App 浏览页面 Referrer Url
 NSString* const SCREEN_REFERRER_URL_PROPERTY = @"$referrer";
+// APP 截屏行为
+NSString* const APP_DID_TAKE_SCREENSHOT = @"$take_screenshot";
 
 @implementation SensorsAnalyticsDebugException
 
@@ -111,7 +117,6 @@ NSString* const SCREEN_REFERRER_URL_PROPERTY = @"$referrer";
 - (void)setSensorsAnalyticsAutoTrackAfterSendAction:(BOOL)sensorsAnalyticsAutoTrackAfterSendAction {
     objc_setAssociatedObject(self, @"sensorsAnalyticsAutoTrackAfterSendAction", [NSNumber numberWithBool:sensorsAnalyticsAutoTrackAfterSendAction], OBJC_ASSOCIATION_ASSIGN);
 }
-
 
 //viewProperty
 - (NSDictionary *)sensorsAnalyticsViewProperties {
@@ -276,6 +281,7 @@ static SensorsAnalyticsSDK *sharedInstance = nil;
                      andDebugMode:(SensorsAnalyticsDebugMode)debugMode {
     
     if (self = [self init]) {
+        
         if (serverURL == nil || [serverURL length] == 0) {
             if (_debugMode != SensorsAnalyticsDebugOff) {
                 @throw [NSException exceptionWithName:@"InvalidArgumentException"
@@ -325,14 +331,14 @@ static SensorsAnalyticsSDK *sharedInstance = nil;
         _ignoredViewTypeList = [[NSMutableArray alloc] init];
         _dateFormatter = [[NSDateFormatter alloc] init];
         [_dateFormatter setDateFormat:@"yyyy-MM-dd HH:mm:ss.SSS"];
-
+        
 #warning 获取配置
         self.checkForEventBindingsOnActive = false;
         self.flushBeforeEnterBackground = YES;
         
         self.safariRequestInProgress = NO;
 
-        self.messageQueue = [[MessageQueueBySqlite alloc] initWithFilePath:[self filePathForData:@"message-v2"]];
+        self.messageQueue = [[MessageQueueBySqlite alloc] initWithFilePath:[self filePathForData:@"message-v2" type:@"db"]];
         if (self.messageQueue == nil) {
             SADebug(@"SqliteException: init Message Queue in Sqlite fail");
         }
@@ -947,6 +953,7 @@ static SensorsAnalyticsSDK *sharedInstance = nil;
         __block BOOL flushSucc = YES;
         
         void (^block)(NSData*, NSURLResponse*, NSError*) = ^(NSData *data, NSURLResponse *response, NSError *error) {
+            NSLog(@"recordArray:%@",recordArray);
             if (error || ![response isKindOfClass:[NSHTTPURLResponse class]]) {
                 SAError(@"%@", [NSString stringWithFormat:@"%@ network failure: %@", self, error ? error : @"Unknown error"]);
                 flushSucc = NO;
@@ -1135,12 +1142,19 @@ static SensorsAnalyticsSDK *sharedInstance = nil;
     return [self.regexTestName evaluateWithObject:name];
 }
 
-- (NSString *)filePathForData:(NSString *)data {
-    NSString *filename = [NSString stringWithFormat:@"sensorsanalytics-%@.plist", data];
+- (NSString *)filePathForData:(NSString *)data
+                         type:(NSString*)type {
+    // sensorsanalytics-%@.plist
+    // sensorsanalytics-%@.db
+    NSString *filename = [NSString stringWithFormat:@"sensorsanalytics-%@.%@", data,type];
     NSString *filepath = [[NSSearchPathForDirectoriesInDomains(NSLibraryDirectory, NSUserDomainMask, YES) lastObject]
-            stringByAppendingPathComponent:filename];
+                          stringByAppendingPathComponent:filename];
     SADebug(@"filepath for %@ is %@", data, filepath);
     return filepath;
+}
+
+- (NSString *)filePathForData:(NSString *)data {
+    return [self filePathForData:data type:@"plist"];
 }
 
 - (void)enqueueWithType:(NSString *)type andEvent:(NSDictionary *)e {
@@ -1601,11 +1615,36 @@ static SensorsAnalyticsSDK *sharedInstance = nil;
         }
         
         // value的类型检查
-        if( ![properties[k] isKindOfClass:[NSString class]] &&
+        
+        /*
+        NSArray *vauleClasses = @[
+                                  @"NSString",
+                                  @"NSNumber",
+                                  @"NSNull",
+                                  @"NSSet",
+                                  @"NSDate",
+                                  @"NSData",
+                                  @"NSConcreteMutableData",
+                                  ];
+        id value = properties[k];
+        NSString *value_class = NSStringFromClass([value class]);
+        if (![vauleClasses containsObject:value_class]) {
+            NSString * errMsg = [NSString stringWithFormat:@"%@ property values must be NSString, NSNumber, NSSet or NSDate. got: %@ %@", self, [properties[k] class], properties[k]];
+            SAError(@"%@", errMsg);
+            if (_debugMode != SensorsAnalyticsDebugOff) {
+                [self showDebugModeWarning:errMsg withNoMoreButton:YES];
+            }
+            return NO;
+
+        }
+        */
+        if(
+           ![properties[k] isKindOfClass:[NSString class]] &&
            ![properties[k] isKindOfClass:[NSNumber class]] &&
            ![properties[k] isKindOfClass:[NSNull class]] &&
            ![properties[k] isKindOfClass:[NSSet class]] &&
-           ![properties[k] isKindOfClass:[NSDate class]]) {
+           ![properties[k] isKindOfClass:[NSDate class]] &&
+           ![properties[k] isKindOfClass:[NSData class]]) {
             NSString * errMsg = [NSString stringWithFormat:@"%@ property values must be NSString, NSNumber, NSSet or NSDate. got: %@ %@", self, [properties[k] class], properties[k]];
             SAError(@"%@", errMsg);
             if (_debugMode != SensorsAnalyticsDebugOff) {
@@ -2180,6 +2219,10 @@ static SensorsAnalyticsSDK *sharedInstance = nil;
                            selector:@selector(applicationDidEnterBackground:)
                                name:UIApplicationDidEnterBackgroundNotification
                              object:nil];
+    [notificationCenter addObserver:self
+                           selector:@selector(userDidTakeScreenShort:) name:UIApplicationUserDidTakeScreenshotNotification
+                             object:nil];
+
     
     [self _enableAutoTrack];
 }
@@ -2728,6 +2771,26 @@ static SensorsAnalyticsSDK *sharedInstance = nil;
     SADebug(@"%@ application will resign active", self);
     _applicationWillResignActive = YES;
     [self stopFlushTimer];
+}
+
+- (void)userDidTakeScreenShort:(NSNotification*)notification {
+    SADebug(@"用户产生截屏操作");
+    UIWindow *window = [UIApplication sharedApplication].windows.firstObject;
+    UIImage *snapshotImage = [window snapshotImage];
+    NSData *snapshotImage_data = [NSData dataWithData:UIImageJPEGRepresentation(snapshotImage, 0.5)];
+    NSString *snapshotImage_data_base64 = [snapshotImage_data sa_base64EncodedString];
+    NSString *uid = [self distinctId];
+    NSTimeInterval timeInterval = [[NSDate date]timeIntervalSince1970];
+    NSString *key = [NSString stringWithFormat:@"%@_%.0lf",uid,timeInterval];
+    
+    if (_autoTrack) {
+        if (_autoTrack && SensorsAnalyticsEventTypeAppDidTakeScreenshot) {
+            [self track:APP_DID_TAKE_SCREENSHOT withProperties:@{
+                                                                 @"snapshotImage":snapshotImage_data_base64,
+                                                                 @"snapshotImage_name":key,
+                                                         }];
+        }
+    }
 }
 
 - (void)applicationDidEnterBackground:(NSNotification *)notification {

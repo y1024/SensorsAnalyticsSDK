@@ -107,6 +107,7 @@ typedef NS_ENUM(NSInteger, SensorsAnalyticsTimeUnit) {
  *   SensorsAnalyticsEventTyppeAppEnd - $AppEnd
  *   SensorsAnalyticsEventTyppeAppClick - $AppClick
  *   SensorsAnalyticsEventTyppeAppViewScreen - $AppViewScreen
+ *   SensorsAnalyticsEventTypeAppDidTakeScreenshot - $take_screenshot
  */
 typedef NS_OPTIONS(NSInteger, SensorsAnalyticsAutoTrackEventType) {
     SensorsAnalyticsEventTypeNone      = 0,
@@ -114,6 +115,7 @@ typedef NS_OPTIONS(NSInteger, SensorsAnalyticsAutoTrackEventType) {
     SensorsAnalyticsEventTypeAppEnd        = 1 << 1,
     SensorsAnalyticsEventTypeAppClick      = 1 << 2,
     SensorsAnalyticsEventTypeAppViewScreen = 1 << 3,
+    SensorsAnalyticsEventTypeAppDidTakeScreenshot = 1<<4,
 };
 
 /**
