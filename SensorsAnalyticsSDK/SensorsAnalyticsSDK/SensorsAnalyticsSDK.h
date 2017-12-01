@@ -107,7 +107,7 @@ typedef NS_ENUM(NSInteger, SensorsAnalyticsTimeUnit) {
  *   SensorsAnalyticsEventTyppeAppEnd - $AppEnd
  *   SensorsAnalyticsEventTyppeAppClick - $AppClick
  *   SensorsAnalyticsEventTyppeAppViewScreen - $AppViewScreen
- *   SensorsAnalyticsEventTypeAppDidTakeScreenshot - $take_screenshot
+ *   SensorsAnalyticsEventTyppeAppViewScreen - $AppViewScreen
  */
 typedef NS_OPTIONS(NSInteger, SensorsAnalyticsAutoTrackEventType) {
     SensorsAnalyticsEventTypeNone      = 0,
@@ -409,6 +409,12 @@ typedef NS_OPTIONS(NSInteger, SensorsAnalyticsNetworkType) {
 - (void)resetAnonymousId;
 
 /**
+ * @abstract
+ * 自动收集 App Crash 日志，该功能默认是关闭的
+ */
+- (void)trackAppCrash;
+
+/**
  * @property
  *
  * @abstract
@@ -688,6 +694,8 @@ typedef NS_OPTIONS(NSInteger, SensorsAnalyticsNetworkType) {
  */
 - (void)trackInstallation:(NSString *)event;
 
+- (void)trackFromH5WithEvent:(NSString *)eventInfo;
+
 /**
  * @abstract
  * 在AutoTrack时，用户可以设置哪些controlls不被AutoTrack
@@ -703,6 +711,12 @@ typedef NS_OPTIONS(NSInteger, SensorsAnalyticsNetworkType) {
  * @return LastScreenUrl
  */
 - (NSString *)getLastScreenUrl;
+
+/**
+ * @abstract
+ * App 退出或进到后台时清空 referrer，默认情况下不清空
+ */
+- (void)clearReferrerWhenAppEnd;
 
 /**
  * @abstract

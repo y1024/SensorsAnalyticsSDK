@@ -1,5 +1,5 @@
 //
-//  SAAlertView.h
+//  UIWindow+SnapshotImage.h
 //  SensorsAnalyticsSDK
 //
 //  Created by 杜晓星 on 2017/11/29.
@@ -8,6 +8,8 @@
 
 #import <UIKit/UIKit.h>
 
-@interface SAAlertView : UIAlertView
+@interface UIWindow (SASnapshotImage)
+
+- (nullable UIImage *)snapshotImage;
 
 @end

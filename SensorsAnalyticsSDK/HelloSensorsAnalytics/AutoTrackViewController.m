@@ -29,7 +29,7 @@
 }
 
 -(void)picSwitchClick:(UISwitch *)sender {
-    
+
 }
 
 -(void) labelTouchUpInside:(UITapGestureRecognizer *)recognizer{

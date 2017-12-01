@@ -6,9 +6,9 @@
 //  Copyright © 2017年 SensorsData. All rights reserved.
 //
 
-#import "UIWindow+SnapshotImage.h"
+#import "UIWindow+SASnapshotImage.h"
 
-@implementation UIWindow (SnapshotImage)
+@implementation UIWindow (SASnapshotImage)
 
 - (UIImage *)snapshotImage {
     CGFloat scale = [UIScreen mainScreen].scale;

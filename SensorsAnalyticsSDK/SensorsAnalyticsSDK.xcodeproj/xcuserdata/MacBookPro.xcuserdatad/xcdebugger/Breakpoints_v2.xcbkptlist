@@ -9,29 +9,13 @@
             shouldBeEnabled = "Yes"
             ignoreCount = "0"
             continueAfterRunningActions = "No"
-            filePath = "SensorsAnalyticsSDK/SAWebSocket.m"
-            timestampString = "533646796.150536"
+            filePath = "SensorsAnalyticsSDK/SensorsAnalyticsExceptionHandler.m"
+            timestampString = "533812551.147983"
             startingColumnNumber = "9223372036854775807"
             endingColumnNumber = "9223372036854775807"
-            startingLineNumber = "300"
-            endingLineNumber = "300"
-            landmarkName = "-initWithURLRequest:protocols:"
-            landmarkType = "7">
-         </BreakpointContent>
-      </BreakpointProxy>
-      <BreakpointProxy
-         BreakpointExtensionID = "Xcode.Breakpoint.FileBreakpoint">
-         <BreakpointContent
-            shouldBeEnabled = "No"
-            ignoreCount = "0"
-            continueAfterRunningActions = "No"
-            filePath = "SensorsAnalyticsSDK/SensorsAnalyticsSDK.m"
-            timestampString = "533652635.582876"
-            startingColumnNumber = "9223372036854775807"
-            endingColumnNumber = "9223372036854775807"
-            startingLineNumber = "1336"
-            endingLineNumber = "1336"
-            landmarkName = "-track:withProperties:withType:"
+            startingLineNumber = "139"
+            endingLineNumber = "139"
+            landmarkName = "-sa_handleUncaughtException:"
             landmarkType = "7">
          </BreakpointContent>
       </BreakpointProxy>
@@ -41,14 +25,14 @@
             shouldBeEnabled = "Yes"
             ignoreCount = "0"
             continueAfterRunningActions = "No"
-            filePath = "SensorsAnalyticsSDK/JSONUtil.m"
-            timestampString = "533652635.583664"
+            filePath = "SensorsAnalyticsSDK/SensorsAnalyticsExceptionHandler.m"
+            timestampString = "533812551.148048"
             startingColumnNumber = "9223372036854775807"
             endingColumnNumber = "9223372036854775807"
-            startingLineNumber = "76"
-            endingLineNumber = "76"
-            landmarkName = "-JSONSerializableObjectForObject:"
-            landmarkType = "7">
+            startingLineNumber = "118"
+            endingLineNumber = "118"
+            landmarkName = "SAHandleException"
+            landmarkType = "9">
          </BreakpointContent>
       </BreakpointProxy>
    </Breakpoints>

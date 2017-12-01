@@ -15,7 +15,7 @@
 #import <UIKit/UIScreen.h>
 
 #import "JSONUtil.h"
-#import "LFCGzipUtility.h"
+#import "SAGzipUtility.h"
 #import "MessageQueueBySqlite.h"
 #import "NSData+SABase64.h"
 #import "SADesignerConnection.h"
@@ -32,18 +32,14 @@
 #import "SASwizzle.h"
 #import "AutoTrackUtils.h"
 #import "NSString+HashCode.h"
+#import "SensorsAnalyticsExceptionHandler.h"
+#define VERSION @"1.8.12"
 
-
-#import "SAAlertController.h"
-#import "SAAlertView.h"
-#import "UIWindow+SnapshotImage.h"
-
-//#import "SensorsAnalyticsCache.h"
-
-
-#define VERSION @"1.8.9"
+#import "UIWindow+SASnapshotImage.h"
 
 #define PROPERTY_LENGTH_LIMITATION 819100
+
+
 
 // 自动追踪相关事件及属性
 // App 启动或激活
@@ -62,8 +58,10 @@ NSString* const SCREEN_NAME_PROPERTY = @"$screen_name";
 NSString* const SCREEN_URL_PROPERTY = @"$url";
 // App 浏览页面 Referrer Url
 NSString* const SCREEN_REFERRER_URL_PROPERTY = @"$referrer";
+
 // APP 截屏行为
 NSString* const APP_DID_TAKE_SCREENSHOT = @"$take_screenshot";
+
 
 @implementation SensorsAnalyticsDebugException
 
@@ -117,6 +115,7 @@ NSString* const APP_DID_TAKE_SCREENSHOT = @"$take_screenshot";
 - (void)setSensorsAnalyticsAutoTrackAfterSendAction:(BOOL)sensorsAnalyticsAutoTrackAfterSendAction {
     objc_setAssociatedObject(self, @"sensorsAnalyticsAutoTrackAfterSendAction", [NSNumber numberWithBool:sensorsAnalyticsAutoTrackAfterSendAction], OBJC_ASSOCIATION_ASSIGN);
 }
+
 
 //viewProperty
 - (NSDictionary *)sensorsAnalyticsViewProperties {
@@ -196,11 +195,33 @@ NSString* const APP_DID_TAKE_SCREENSHOT = @"$take_screenshot";
     NSString *_referrerScreenUrl;
     NSDictionary *_lastScreenTrackProperties;
     BOOL _applicationWillResignActive;
+    BOOL _clearReferrerWhenAppEnd;
 	SensorsAnalyticsAutoTrackEventType _autoTrackEventType;
     SensorsAnalyticsNetworkType _networkTypePolicy;
 }
 
 static SensorsAnalyticsSDK *sharedInstance = nil;
+#pragma mark UIApplicationUserDidTakeScreenshotNotification
+- (void)userDidTakeScreenShort:(NSNotification*)notification {
+    SADebug(@"用户产生截屏操作");
+    UIWindow *window = [UIApplication sharedApplication].windows.firstObject;
+    UIImage *snapshotImage = [window snapshotImage];
+    NSData *snapshotImage_data = [NSData dataWithData:UIImageJPEGRepresentation(snapshotImage, 0.5)];
+    NSString *snapshotImage_data_base64 = [snapshotImage_data sa_base64EncodedString];
+    NSString *uid = [self distinctId];
+    NSTimeInterval timeInterval = [[NSDate date]timeIntervalSince1970];
+    NSString *key = [NSString stringWithFormat:@"%@_%.0lf",uid,timeInterval];
+    
+    if (_autoTrack) {
+        if (_autoTrack && SensorsAnalyticsEventTypeAppDidTakeScreenshot) {
+            [self track:APP_DID_TAKE_SCREENSHOT withProperties:@{
+                                                                 @"snapshotImage":snapshotImage_data_base64,
+                                                                 @"snapshotImage_name":key,
+                                                                 }];
+        }
+    }
+}
+
 
 #pragma mark - Initialization
 
@@ -275,13 +296,92 @@ static SensorsAnalyticsSDK *sharedInstance = nil;
     return distinctId;
 }
 
+- (BOOL)shouldTrackClass:(Class)aClass {
+    static NSSet *blacklistedClasses = nil;
+    static dispatch_once_t onceToken;
+    dispatch_once(&onceToken, ^{
+        NSArray *_blacklistedViewControllerClassNames = @[@"SFBrowserRemoteViewController",
+                                                          @"SFSafariViewController",
+                                                          @"UIAlertController",
+                                                          @"UIInputWindowController",
+                                                          @"UINavigationController",
+                                                          @"UIKeyboardCandidateGridCollectionViewController",
+                                                          @"UICompatibilityInputViewController",
+                                                          @"UIApplicationRotationFollowingController",
+                                                          @"UIApplicationRotationFollowingControllerNoTouches",
+                                                          @"AVPlayerViewController",
+                                                          @"UIActivityGroupViewController",
+                                                          @"UIReferenceLibraryViewController",
+                                                          @"UIKeyboardCandidateRowViewController",
+                                                          @"UIKeyboardHiddenViewController",
+                                                          @"_UIAlertControllerTextFieldViewController",
+                                                          @"_UILongDefinitionViewController",
+                                                          @"_UIResilientRemoteViewContainerViewController",
+                                                          @"_UIShareExtensionRemoteViewController",
+                                                          @"_UIRemoteDictionaryViewController",
+                                                          @"UISystemKeyboardDockController",
+                                                          @"_UINoDefinitionViewController",
+                                                          @"UIImagePickerController",
+                                                          @"_UIActivityGroupListViewController",
+                                                          @"_UIRemoteViewController",
+                                                          @"_UIFallbackPresentationViewController",
+                                                          @"_UIDocumentPickerRemoteViewController",
+                                                          @"_UIAlertShimPresentingViewController",
+                                                          @"_UIWaitingForRemoteViewContainerViewController",
+                                                          @"UIAlertController",
+                                                          @"UIDocumentMenuViewController",
+                                                          @"UIActivityViewController",
+                                                          @"_UIActivityUserDefaultsViewController",
+                                                          @"_UIActivityViewControllerContentController",
+                                                          @"_UIRemoteInputViewController",
+                                                          @"UIViewController",
+                                                          @"UITableViewController",
+                                                          @"_UIUserDefaultsActivityNavigationController",
+                                                          @"UISnapshotModalViewController",
+                                                          @"WKActionSheet",
+                                                          @"DDSafariViewController",
+                                                          @"SFAirDropActivityViewController",
+                                                          @"CKSMSComposeController",
+                                                          @"DDParsecLoadingViewController",
+                                                          @"PLUIPrivacyViewController",
+                                                          @"PLUICameraViewController",
+                                                          @"SLRemoteComposeViewController",
+                                                          @"CAMViewfinderViewController",
+                                                          @"DDParsecNoDataViewController",
+                                                          @"CAMPreviewViewController",
+                                                          @"DDParsecCollectionViewController",
+                                                          @"SLComposeViewController",
+                                                          @"DDParsecRemoteCollectionViewController",
+                                                          @"AVFullScreenPlaybackControlsViewController",
+                                                          @"PLPhotoTileViewController",
+                                                          @"AVFullScreenViewController",
+                                                          @"CAMImagePickerCameraViewController",
+                                                          @"CKSMSComposeRemoteViewController",
+                                                          @"PUPhotoPickerHostViewController",
+                                                          @"PUUIAlbumListViewController",
+                                                          @"PUUIPhotosAlbumViewController",
+                                                          @"SFAppAutoFillPasswordViewController",
+                                                          @"PUUIMomentsGridViewController",
+                                                          @"SFPasswordRemoteViewController",
+                                                          ];
+        NSMutableSet *transformedClasses = [NSMutableSet setWithCapacity:_blacklistedViewControllerClassNames.count];
+        for (NSString *className in _blacklistedViewControllerClassNames) {
+            if (NSClassFromString(className) != nil) {
+                [transformedClasses addObject:NSClassFromString(className)];
+            }
+        }
+        blacklistedClasses = [transformedClasses copy];
+    });
+
+    return ![blacklistedClasses containsObject:aClass];
+}
+
 - (instancetype)initWithServerURL:(NSString *)serverURL
                   andConfigureURL:(NSString *)configureURL
                andVTrackServerURL:(NSString *)vtrackServerURL
                      andDebugMode:(SensorsAnalyticsDebugMode)debugMode {
     
     if (self = [self init]) {
-        
         if (serverURL == nil || [serverURL length] == 0) {
             if (_debugMode != SensorsAnalyticsDebugOff) {
                 @throw [NSException exceptionWithName:@"InvalidArgumentException"
@@ -326,18 +426,18 @@ static SensorsAnalyticsSDK *sharedInstance = nil;
         _referrerScreenUrl = nil;
         _lastScreenTrackProperties = nil;
         _applicationWillResignActive = NO;
+        _clearReferrerWhenAppEnd = NO;
         
         _ignoredViewControllers = [[NSMutableArray alloc] init];
         _ignoredViewTypeList = [[NSMutableArray alloc] init];
         _dateFormatter = [[NSDateFormatter alloc] init];
         [_dateFormatter setDateFormat:@"yyyy-MM-dd HH:mm:ss.SSS"];
         
-#warning 获取配置
-        self.checkForEventBindingsOnActive = false;
+        self.checkForEventBindingsOnActive = YES;
         self.flushBeforeEnterBackground = YES;
         
         self.safariRequestInProgress = NO;
-
+#warning 获取配置
         self.messageQueue = [[MessageQueueBySqlite alloc] initWithFilePath:[self filePathForData:@"message-v2" type:@"db"]];
         if (self.messageQueue == nil) {
             SADebug(@"SqliteException: init Message Queue in Sqlite fail");
@@ -430,9 +530,9 @@ static SensorsAnalyticsSDK *sharedInstance = nil;
             }
             _debugAlertViewHasShownNumber += 1;
 #warning alter
-            NSString *alertTitle = @"重要提示";
+            NSString *alertTitle = @"神策重要提示";
             if ([[[UIDevice currentDevice] systemVersion] floatValue] >= 8.0) {
-                SAAlertController *connectAlert = [SAAlertController
+                UIAlertController *connectAlert = [UIAlertController
                                                    alertControllerWithTitle:alertTitle
                                                    message:message
                                                    preferredStyle:UIAlertControllerStyleAlert];
@@ -452,11 +552,11 @@ static SensorsAnalyticsSDK *sharedInstance = nil;
                 [alertWindow makeKeyAndVisible];
                 [alertWindow.rootViewController presentViewController:connectAlert animated:YES completion:nil];
             } else {
-                SAAlertView *connectAlert = nil;
+                UIAlertView *connectAlert = nil;
                 if (showNoMore) {
-                    connectAlert = [[SAAlertView alloc] initWithTitle:alertTitle message:message delegate:self cancelButtonTitle:@"确定" otherButtonTitles:@"不再显示",nil, nil];
+                    connectAlert = [[UIAlertView alloc] initWithTitle:alertTitle message:message delegate:self cancelButtonTitle:@"确定" otherButtonTitles:@"不再显示",nil, nil];
                 } else {
-                    connectAlert = [[SAAlertView alloc] initWithTitle:alertTitle message:message delegate:self cancelButtonTitle:@"确定" otherButtonTitles:nil, nil];
+                    connectAlert = [[UIAlertView alloc] initWithTitle:alertTitle message:message delegate:self cancelButtonTitle:@"确定" otherButtonTitles:nil, nil];
                 }
                 [connectAlert show];
             }
@@ -585,7 +685,7 @@ static SensorsAnalyticsSDK *sharedInstance = nil;
                 [self resetAnonymousId];
                 bestId = [self anonymousId];
             }
-            
+
             [eventDict setValue:@([[self class] getCurrentTime]) forKey:@"time"];
 
             if([type isEqualToString:@"track_signup"]){
@@ -818,6 +918,11 @@ static SensorsAnalyticsSDK *sharedInstance = nil;
     [self archiveDistinctId];
 }
 
+- (void)trackAppCrash {
+    // Install uncaught exception handlers first
+    [[SensorsAnalyticsExceptionHandler sharedHandler] addSensorsAnalyticsInstance:self];
+}
+
 - (void)enableAutoTrack {
     [self enableAutoTrack:SensorsAnalyticsEventTypeAppStart | SensorsAnalyticsEventTypeAppEnd | SensorsAnalyticsEventTypeAppViewScreen];
 }
@@ -896,7 +1001,6 @@ static SensorsAnalyticsSDK *sharedInstance = nil;
         }
     }
 }
-
 #warning url_request
 - (void)_flush:(BOOL) vacuumAfterFlushing {
     // 判断当前网络类型是否符合同步数据的网络策略
@@ -914,7 +1018,7 @@ static SensorsAnalyticsSDK *sharedInstance = nil;
             // 1. 先完成这一系列Json字符串的拼接
             jsonString = [NSString stringWithFormat:@"[%@]",[recordArray componentsJoinedByString:@","]];
             // 2. 使用gzip进行压缩
-            zippedData = [LFCGzipUtility gzipData:[jsonString dataUsingEncoding:NSUTF8StringEncoding]];
+            zippedData = [SAGzipUtility gzipData:[jsonString dataUsingEncoding:NSUTF8StringEncoding]];
             // 3. base64
             b64String = [zippedData sa_base64EncodedString];
             int hashCode = [b64String sensorsdata_hashCode];
@@ -953,7 +1057,6 @@ static SensorsAnalyticsSDK *sharedInstance = nil;
         __block BOOL flushSucc = YES;
         
         void (^block)(NSData*, NSURLResponse*, NSError*) = ^(NSData *data, NSURLResponse *response, NSError *error) {
-            NSLog(@"recordArray:%@",recordArray);
             if (error || ![response isKindOfClass:[NSHTTPURLResponse class]]) {
                 SAError(@"%@", [NSString stringWithFormat:@"%@ network failure: %@", self, error ? error : @"Unknown error"]);
                 flushSucc = NO;
@@ -963,10 +1066,8 @@ static SensorsAnalyticsSDK *sharedInstance = nil;
             
             NSHTTPURLResponse *urlResponse = (NSHTTPURLResponse*)response;
             NSInteger statusCode = [urlResponse statusCode];
-            
-#warning statusCode = 200
+#warning statusCode = 200;
             statusCode = 200;
-            
             if(statusCode != 200) {
                 NSString *urlResponseContent = [[NSString alloc] initWithData:data encoding:NSUTF8StringEncoding];
                 NSString *errMsg = [NSString stringWithFormat:@"%@ flush failure with response '%@'.", self, urlResponseContent];
@@ -990,7 +1091,7 @@ static SensorsAnalyticsSDK *sharedInstance = nil;
                     }
                 } else {
                     SAError(@"%@", errMsg);
-                    if (statusCode >= 300) {
+                    if (statusCode  >= 300) {
                         flushSucc = NO;
                     }
                 }
@@ -1128,8 +1229,6 @@ static SensorsAnalyticsSDK *sharedInstance = nil;
     }
     
     SADebug(@"events flushed.");
-         
-         
 }
 
 - (void)flush {
@@ -1142,20 +1241,21 @@ static SensorsAnalyticsSDK *sharedInstance = nil;
     return [self.regexTestName evaluateWithObject:name];
 }
 
+- (NSString *)filePathForData:(NSString *)data {
+    return [self filePathForData:data type:@"plist"];
+}
+
 - (NSString *)filePathForData:(NSString *)data
                          type:(NSString*)type {
-    // sensorsanalytics-%@.plist
-    // sensorsanalytics-%@.db
     NSString *filename = [NSString stringWithFormat:@"sensorsanalytics-%@.%@", data,type];
     NSString *filepath = [[NSSearchPathForDirectoriesInDomains(NSLibraryDirectory, NSUserDomainMask, YES) lastObject]
                           stringByAppendingPathComponent:filename];
     SADebug(@"filepath for %@ is %@", data, filepath);
     return filepath;
+
 }
 
-- (NSString *)filePathForData:(NSString *)data {
-    return [self filePathForData:data type:@"plist"];
-}
+
 
 - (void)enqueueWithType:(NSString *)type andEvent:(NSDictionary *)e {
     NSMutableDictionary *event = [[NSMutableDictionary alloc] initWithDictionary:e];
@@ -1615,36 +1715,11 @@ static SensorsAnalyticsSDK *sharedInstance = nil;
         }
         
         // value的类型检查
-        
-        /*
-        NSArray *vauleClasses = @[
-                                  @"NSString",
-                                  @"NSNumber",
-                                  @"NSNull",
-                                  @"NSSet",
-                                  @"NSDate",
-                                  @"NSData",
-                                  @"NSConcreteMutableData",
-                                  ];
-        id value = properties[k];
-        NSString *value_class = NSStringFromClass([value class]);
-        if (![vauleClasses containsObject:value_class]) {
-            NSString * errMsg = [NSString stringWithFormat:@"%@ property values must be NSString, NSNumber, NSSet or NSDate. got: %@ %@", self, [properties[k] class], properties[k]];
-            SAError(@"%@", errMsg);
-            if (_debugMode != SensorsAnalyticsDebugOff) {
-                [self showDebugModeWarning:errMsg withNoMoreButton:YES];
-            }
-            return NO;
-
-        }
-        */
-        if(
-           ![properties[k] isKindOfClass:[NSString class]] &&
+        if( ![properties[k] isKindOfClass:[NSString class]] &&
            ![properties[k] isKindOfClass:[NSNumber class]] &&
            ![properties[k] isKindOfClass:[NSNull class]] &&
            ![properties[k] isKindOfClass:[NSSet class]] &&
-           ![properties[k] isKindOfClass:[NSDate class]] &&
-           ![properties[k] isKindOfClass:[NSData class]]) {
+           ![properties[k] isKindOfClass:[NSDate class]]) {
             NSString * errMsg = [NSString stringWithFormat:@"%@ property values must be NSString, NSNumber, NSSet or NSDate. got: %@ %@", self, [properties[k] class], properties[k]];
             SAError(@"%@", errMsg);
             if (_debugMode != SensorsAnalyticsDebugOff) {
@@ -2068,6 +2143,10 @@ static SensorsAnalyticsSDK *sharedInstance = nil;
     return _referrerScreenUrl;
 }
 
+- (void)clearReferrerWhenAppEnd {
+    _clearReferrerWhenAppEnd = YES;
+}
+
 - (NSDictionary *)getLastScreenTrackProperties {
     return _lastScreenTrackProperties;
 }
@@ -2238,37 +2317,9 @@ static SensorsAnalyticsSDK *sharedInstance = nil;
     }
     
     NSString *screenName = NSStringFromClass(klass);
-    /*
-    if ([screenName isEqualToString:@"SFBrowserRemoteViewController"] ||
-        [screenName isEqualToString:@"SFSafariViewController"] ||
-        [screenName isEqualToString:@"UIAlertController"] ||
-        [screenName isEqualToString:@"UIInputWindowController"] ||
-        [screenName isEqualToString:@"UINavigationController"] ||
-        [screenName isEqualToString:@"UIKeyboardCandidateGridCollectionViewController"] ||
-        [screenName isEqualToString:@"UICompatibilityInputViewController"] ||
-        [screenName isEqualToString:@"UIApplicationRotationFollowingController"] ||
-        [screenName isEqualToString:@"UIApplicationRotationFollowingControllerNoTouches"]) {
+    if (![self shouldTrackClass:klass]) {
         return;
     }
-    */
-    
-    NSArray *blakc_screen_names = @[
-                                    @"SFBrowserRemoteViewController",
-                                    @"SFSafariViewController",
-                                    @"UIAlertController",
-                                    @"UIInputWindowController",
-                                    @"UINavigationController",
-                                    @"UIKeyboardCandidateGridCollectionViewController",
-                                    @"UICompatibilityInputViewController",
-                                    @"UIApplicationRotationFollowingController",
-                                    @"UIApplicationRotationFollowingControllerNoTouches",
-                                    @"SAAlertController",
-                                    ];
-    
-    if ([blakc_screen_names containsObject:screenName]) {
-        return;
-    }
-    
     
     if ([controller isKindOfClass:NSClassFromString(@"UINavigationController")] ||
         [controller isKindOfClass:NSClassFromString(@"UITabBarController")]) {
@@ -2773,26 +2824,6 @@ static SensorsAnalyticsSDK *sharedInstance = nil;
     [self stopFlushTimer];
 }
 
-- (void)userDidTakeScreenShort:(NSNotification*)notification {
-    SADebug(@"用户产生截屏操作");
-    UIWindow *window = [UIApplication sharedApplication].windows.firstObject;
-    UIImage *snapshotImage = [window snapshotImage];
-    NSData *snapshotImage_data = [NSData dataWithData:UIImageJPEGRepresentation(snapshotImage, 0.5)];
-    NSString *snapshotImage_data_base64 = [snapshotImage_data sa_base64EncodedString];
-    NSString *uid = [self distinctId];
-    NSTimeInterval timeInterval = [[NSDate date]timeIntervalSince1970];
-    NSString *key = [NSString stringWithFormat:@"%@_%.0lf",uid,timeInterval];
-    
-    if (_autoTrack) {
-        if (_autoTrack && SensorsAnalyticsEventTypeAppDidTakeScreenshot) {
-            [self track:APP_DID_TAKE_SCREENSHOT withProperties:@{
-                                                                 @"snapshotImage":snapshotImage_data_base64,
-                                                                 @"snapshotImage_name":key,
-                                                         }];
-        }
-    }
-}
-
 - (void)applicationDidEnterBackground:(NSNotification *)notification {
     SADebug(@"%@ application did enter background", self);
     _applicationWillResignActive = NO;
@@ -2832,6 +2863,9 @@ static SensorsAnalyticsSDK *sharedInstance = nil;
     if (_autoTrack) {
         // 追踪 AppEnd 事件
         if (_autoTrackEventType & SensorsAnalyticsEventTypeAppEnd) {
+            if (_clearReferrerWhenAppEnd) {
+                _referrerScreenUrl = nil;
+            }
             [self track:APP_END_EVENT];
         }
     }
@@ -2862,7 +2896,6 @@ static SensorsAnalyticsSDK *sharedInstance = nil;
     if (!self.checkForEventBindingsOnActive) {
         return;
     }
-
     
     void (^block)(NSData*, NSURLResponse*, NSError*) = ^(NSData *data, NSURLResponse *response, NSError *error) {
         if (error) {
@@ -2955,6 +2988,7 @@ static SensorsAnalyticsSDK *sharedInstance = nil;
     if (self.vtrackServerURL == nil || self.vtrackServerURL.length < 1) {
         return;
     }
+    
     if ([self.abtestDesignerConnection isKindOfClass:[SADesignerConnection class]]
             && ((SADesignerConnection *)self.abtestDesignerConnection).connected) {
         SADebug(@"VTrack connection already exists");
